@@ -11,7 +11,7 @@ class AItem;
 /**
  * 
  */
-UCLASS(BlueprintType)
+UCLASS(Blueprintable)
 class SPATIALINVENTORY_API UItemObject : public UObject
 {
 	GENERATED_BODY()
