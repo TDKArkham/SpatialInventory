@@ -34,4 +34,7 @@ protected:
 public:
 	UFUNCTION(BlueprintCallable, Category = "ItemObject")
 	FIntPoint GetDimension() const;
+
+	UFUNCTION(BlueprintCallable, Category = "ItemObject")
+	UMaterialInstance* GetIcon() const;
 };

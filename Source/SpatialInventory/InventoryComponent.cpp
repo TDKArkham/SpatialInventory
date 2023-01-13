@@ -10,8 +10,6 @@ UInventoryComponent::UInventoryComponent()
 {
 	Columns = 0;
 	Rows = 0;
-
-	bIsDirty = false;
 }
 
 void UInventoryComponent::BeginPlay()
@@ -31,7 +29,7 @@ bool UInventoryComponent::TryAddItem(UItemObject* ItemObject)
 {
 	if (ItemObject)
 	{
-		for (int TopLeftIndex = 0; TopLeftIndex < Items.Num(); TopLeftIndex++)
+		for (int32 TopLeftIndex = 0; TopLeftIndex < Items.Num(); TopLeftIndex++)
 		{
 			if (CheckIsRoomAvailable(ItemObject, TopLeftIndex))
 			{
@@ -41,9 +39,9 @@ bool UInventoryComponent::TryAddItem(UItemObject* ItemObject)
 
 				FIntPoint Dimension = ItemObject->GetDimension();
 
-				for (int X = TileX; X < TileX + Dimension.X; X++)
+				for (int32 X = TileX; X < TileX + Dimension.X; X++)
 				{
-					for (int Y = TileY; Y < TileY + Dimension.Y; Y++)
+					for (int32 Y = TileY; Y < TileY + Dimension.Y; Y++)
 					{
 						// Convert current Tile coordinate back to Index
 						int32 Index = Y * Columns + X;
@@ -52,7 +50,7 @@ bool UInventoryComponent::TryAddItem(UItemObject* ItemObject)
 					}
 				}
 
-				bIsDirty = true;
+				OnInventoryChanged.Broadcast(ItemObject);
 
 				return true;
 			}
@@ -70,9 +68,9 @@ bool UInventoryComponent::CheckIsRoomAvailable(UItemObject* ItemObject, int32 To
 
 	FIntPoint Dimension = ItemObject->GetDimension();
 
-	for (int X = TileX; X < TileX + Dimension.X; X++)
+	for (int32 X = TileX; X < TileX + Dimension.X; X++)
 	{
-		for (int Y = TileY; Y < TileY + Dimension.Y; Y++)
+		for (int32 Y = TileY; Y < TileY + Dimension.Y; Y++)
 		{
 			if (X < 0 || X >= Columns || Y < 0 || Y > Rows)
 			{
@@ -96,6 +94,30 @@ bool UInventoryComponent::CheckIsRoomAvailable(UItemObject* ItemObject, int32 To
 	}
 
 	return true;
+}
+
+TMap<UItemObject*, FTile> UInventoryComponent::GetAllItems() const
+{
+	TMap<UItemObject*, FTile> AllItems;
+	for(int32 Index = 0; Index < Items.Num(); Index++)
+	{
+		UItemObject* CurrentItemObj = Items[Index];
+		if (CurrentItemObj)
+		{
+			/*if (AllItems.Contains(CurrentItemObj))
+			{
+				break;
+			}
+			FTile CurrentTile(Index % Columns, Index / Columns);
+			AllItems.Add(CurrentItemObj, CurrentTile);*/
+			if (!AllItems.Contains(CurrentItemObj))
+			{
+				FTile CurrentTile(Index % Columns, Index / Columns);
+				AllItems.Add(CurrentItemObj, CurrentTile);
+			}
+		}
+	}
+	return AllItems;
 }
 
 UInventoryComponent* UInventoryComponent::GetInventoryComponent(AActor* TargetActor)

@@ -7,3 +7,13 @@ FIntPoint UItemObject::GetDimension() const
 {
 	return Dimension;
 }
+
+UMaterialInstance* UItemObject::GetIcon() const
+{
+	if(bIsRotated)
+	{
+		return IconRotated;
+	}
+
+	return Icon;
+}

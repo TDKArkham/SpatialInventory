@@ -8,6 +8,8 @@
 
 class UItemObject;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryChanged, UItemObject*, ChangedItemObject);
+
 USTRUCT(BlueprintType)
 struct FLine
 {
@@ -25,11 +27,17 @@ struct FTile
 {
 	GENERATED_BODY()
 
-	/*FTile(int32 InX, int32 InY)
+	FTile()
+	{
+		X = 0;
+		Y = 0;
+	}
+
+	FTile(int32 InX, int32 InY)
 	{
 		X = InX;
 		Y = InY;
-	}*/
+	}
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 X;
@@ -49,12 +57,11 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-private:
-	// Determine if the inventory has been changed
-	bool bIsDirty;
-
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	UPROPERTY(BlueprintAssignable, Category = "Inventory")
+	FOnInventoryChanged OnInventoryChanged;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory", meta = (ExposeOnSpawn = true))
 	int32 Columns;
@@ -67,6 +74,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	bool TryAddItem(UItemObject* ItemObject);
+
+
+	
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	TMap<UItemObject*, FTile> GetAllItems() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Inventory")
 	static UInventoryComponent* GetInventoryComponent(AActor* TargetActor);
