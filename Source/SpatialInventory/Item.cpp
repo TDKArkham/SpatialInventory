@@ -24,7 +24,7 @@ void AItem::BeginPlay()
 
 	if (ItemObject == nullptr)
 	{
-		ItemObject = GetDefaultItemObject();
+		ItemObject = CreateDefaultItemObject();
 	}
 }
 
@@ -45,7 +45,7 @@ void AItem::OnComponentBeginOverlap(UPrimitiveComponent* OverlappedComponent, AA
 	}
 }
 
-UItemObject* AItem::GetDefaultItemObject_Implementation()
+UItemObject* AItem::CreateDefaultItemObject_Implementation()
 {
-	return nullptr;
+	return ItemObject;
 }

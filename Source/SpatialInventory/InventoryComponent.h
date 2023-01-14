@@ -73,17 +73,27 @@ public:
 	TArray<UItemObject*> Items;
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	bool TryAddItem(UItemObject* ItemObject);
+	bool TryAddItem(UItemObject* ItemObjectToAdd);
 
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	bool CheckIsRoomAvailable(UItemObject* ItemObject, int32 TopLeftIndex);
 
-	
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void AddItemAt(UItemObject* ItemObjectToAdd, int32 TopLeftIndex);
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void RemoveItem(UItemObject* ItemObjectToRemove);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Inventory")
+	FORCEINLINE FTile IndexToTile(int32 Index) { return FTile(Index % Columns, Index / Columns); }
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Inventory")
+	FORCEINLINE int32 TileToIndex(FTile Tile) { return Tile.X + Tile.Y * Columns; }
+	FORCEINLINE int32 TileToIndex(int32 TileX, int32 TileY) { return TileX + TileY * Columns; }
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	TMap<UItemObject*, FTile> GetAllItems() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Inventory")
 	static UInventoryComponent* GetInventoryComponent(AActor* TargetActor);
-
-protected:
-	bool CheckIsRoomAvailable(UItemObject* ItemObject, int32 TopLeftIndex);
 };

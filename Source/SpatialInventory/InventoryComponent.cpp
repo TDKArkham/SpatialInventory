@@ -22,38 +22,28 @@ void UInventoryComponent::BeginPlay()
 void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
 }
 
-bool UInventoryComponent::TryAddItem(UItemObject* ItemObject)
+bool UInventoryComponent::TryAddItem(UItemObject* ItemObjectToAdd)
 {
-	if (ItemObject)
+	if (ItemObjectToAdd)
 	{
 		for (int32 TopLeftIndex = 0; TopLeftIndex < Items.Num(); TopLeftIndex++)
 		{
-			if (CheckIsRoomAvailable(ItemObject, TopLeftIndex))
+			if (!CheckIsRoomAvailable(ItemObjectToAdd, TopLeftIndex))
 			{
-				// Convert index into Tile coordinate
-				int32 TileX = TopLeftIndex % Columns;
-				int32 TileY = TopLeftIndex / Columns;
+				ItemObjectToAdd->RotateItem();
 
-				FIntPoint Dimension = ItemObject->GetDimension();
-
-				for (int32 X = TileX; X < TileX + Dimension.X; X++)
+				if (!CheckIsRoomAvailable(ItemObjectToAdd, TopLeftIndex))
 				{
-					for (int32 Y = TileY; Y < TileY + Dimension.Y; Y++)
-					{
-						// Convert current Tile coordinate back to Index
-						int32 Index = Y * Columns + X;
-
-						Items[Index] = ItemObject;
-					}
+					ItemObjectToAdd->RotateItem();
+					continue;
 				}
-
-				OnInventoryChanged.Broadcast(ItemObject);
-
-				return true;
 			}
+
+			AddItemAt(ItemObjectToAdd, TopLeftIndex);
+
+			return true;
 		}
 	}
 
@@ -63,14 +53,13 @@ bool UInventoryComponent::TryAddItem(UItemObject* ItemObject)
 bool UInventoryComponent::CheckIsRoomAvailable(UItemObject* ItemObject, int32 TopLeftIndex)
 {
 	// Convert index into Tile coordinate
-	int32 TileX = TopLeftIndex % Columns;
-	int32 TileY = TopLeftIndex / Columns;
+	FTile Tile = IndexToTile(TopLeftIndex);
 
 	FIntPoint Dimension = ItemObject->GetDimension();
 
-	for (int32 X = TileX; X < TileX + Dimension.X; X++)
+	for (int32 X = Tile.X; X < Tile.X + Dimension.X; X++)
 	{
-		for (int32 Y = TileY; Y < TileY + Dimension.Y; Y++)
+		for (int32 Y = Tile.Y; Y < Tile.Y + Dimension.Y; Y++)
 		{
 			if (X < 0 || X >= Columns || Y < 0 || Y > Rows)
 			{
@@ -96,10 +85,47 @@ bool UInventoryComponent::CheckIsRoomAvailable(UItemObject* ItemObject, int32 To
 	return true;
 }
 
+void UInventoryComponent::AddItemAt(UItemObject* ItemObjectToAdd, int32 TopLeftIndex)
+{
+	// Convert index into Tile coordinate
+	FTile Tile = IndexToTile(TopLeftIndex);
+
+	FIntPoint Dimension = ItemObjectToAdd->GetDimension();
+
+	for (int32 X = Tile.X; X < Tile.X + Dimension.X; X++)
+	{
+		for (int32 Y = Tile.Y; Y < Tile.Y + Dimension.Y; Y++)
+		{
+			// Convert current Tile coordinate back to Index
+			int32 Index = TileToIndex(X, Y);
+
+			Items[Index] = ItemObjectToAdd;
+		}
+	}
+
+	OnInventoryChanged.Broadcast(ItemObjectToAdd);
+}
+
+void UInventoryComponent::RemoveItem(UItemObject* ItemObjectToRemove)
+{
+	if (ItemObjectToRemove)
+	{
+		for (int32 Index = 0; Index < Items.Num(); Index++)
+		{
+			if (ItemObjectToRemove == Items[Index])
+			{
+				Items[Index] = nullptr;
+			}
+		}
+
+		OnInventoryChanged.Broadcast(ItemObjectToRemove);
+	}
+}
+
 TMap<UItemObject*, FTile> UInventoryComponent::GetAllItems() const
 {
 	TMap<UItemObject*, FTile> AllItems;
-	for(int32 Index = 0; Index < Items.Num(); Index++)
+	for (int32 Index = 0; Index < Items.Num(); Index++)
 	{
 		UItemObject* CurrentItemObj = Items[Index];
 		if (CurrentItemObj)

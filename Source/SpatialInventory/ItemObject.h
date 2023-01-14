@@ -26,12 +26,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemObject", meta = (ExposeOnSpawn = true))
 	UMaterialInstance* IconRotated;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemObject", meta = (ExposeOnSpawn = true))
-	TSubclassOf<AItem> ItemClass;
-
 	bool bIsRotated;
 
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "ItemObject", meta = (ExposeOnSpawn = true))
+	TSubclassOf<AItem> ItemClass;
+
+	UFUNCTION(BlueprintCallable, Category = "ItemObject")
+	void RotateItem();
+	
 	UFUNCTION(BlueprintCallable, Category = "ItemObject")
 	FIntPoint GetDimension() const;
 
